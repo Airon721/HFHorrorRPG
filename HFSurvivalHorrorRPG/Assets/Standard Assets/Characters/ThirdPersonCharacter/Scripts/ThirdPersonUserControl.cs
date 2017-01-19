@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace UnityStandardAssets.Characters.ThirdPerson
 {
@@ -12,6 +14,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private Vector3 m_CamForward;             // The current forward direction of the camera
         private Vector3 m_Move;
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
+		public bool leftMouseClick=false;
+		public bool rightMouseClick=false;
+		public float leftMouseClicks;
 
         
         private void Start()
@@ -24,7 +29,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             else
             {
                 Debug.LogWarning(
-                    "Warning: no main camera found. Third person character needs a Camera tagged \"MainCamera\", for camera-relative controls.", gameObject);
+                    "Warning: no main camera found. Third person character needs a Camera tagged \"MainCamera\", for camera-relative controls.");
                 // we use self-relative controls in this case, which probably isn't what the user wants, but hey, we warned them!
             }
 
@@ -39,7 +44,66 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
             }
+
+
+
+
+
+			leftMouseClick = Input.GetMouseButtonDown(0);
+
+			if(leftMouseClick){
+				StartCoroutine("TimerClickTime");
+				//animator.SetBool("LeftMouseClick", leftMouseClick);
+				//animator.SetBool("RightMouse", rightMouseClick);
+				//m_Character.Attack(leftMouseClick);
+				m_Character.leftMouseClick = true;
+				//m_Character.leftMouseClicks = 1;
+				FightCombo();
+
+			}
+	
         }
+
+		void FightCombo(){   //every left mouse click +1 to animation number counter
+			
+			leftMouseClicks += 1f;
+			//animator.SetFloat("LeftMouseClicks", leftMouseClicks);
+
+			if(leftMouseClicks>2f){
+				leftMouseClicks = 1f;
+			}
+
+			print (leftMouseClicks);
+
+			m_Character.leftMouseClicks = leftMouseClicks;
+
+		}	
+
+		IEnumerator TimerClickTime(){  //timer, few seconds after click mouse bool leftMouseClick = true
+
+			yield return new WaitForSeconds(0.1f);
+			leftMouseClick=false;
+			m_Character.leftMouseClick = false;
+			m_Character.leftMouseClicks = 0;
+			yield return null;
+
+		}
+
+		IEnumerator InAction(){ //recieve message from fight animation in mecanim controller
+
+			yield return null;
+		}
+
+		IEnumerator AnimationEnd(){//recieve message from fight animation in mecanim controller
+
+			yield return null;
+		}
+
+
+
+
+
+
 
 
         // Fixed update is called in sync with physics
