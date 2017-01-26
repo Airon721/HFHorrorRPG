@@ -9,14 +9,16 @@ using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour {
 	public ArrayList playerInventory;
-	private const int MAX_INV_SIZE = 8;
-	private int currentItems = 0;
+	private const int MAX_INV_SIZE = 9;
+	public int size = 0;
 	public Canvas inventoryUI;
-
+	public Transform[] invSlots;
+	private int slotIndex = 0;
 	// Use this for initialization
 	void Start () {
 		inventoryUI = GameObject.FindGameObjectWithTag("Canvas").GetComponent<Canvas>();
 		playerInventory = new ArrayList();
+		invSlots = new Transform[MAX_INV_SIZE];
 		InitializeGUI (inventoryUI);
 	}
 
@@ -33,9 +35,9 @@ public class Inventory : MonoBehaviour {
 	 * @returns true if item was added to inventory
 	 */
 	private bool addItem(Item foundItem){
-		if (currentItems < MAX_INV_SIZE) {
-			playerInventory.Add (foundItem);
-			currentItems++;
+		if (size < MAX_INV_SIZE) {
+			Contains (foundItem);
+			InitializeGUI (inventoryUI);
 			return true;
 		} else {
 			Debug.Log ("Inventory is full");
@@ -49,9 +51,9 @@ public class Inventory : MonoBehaviour {
 	 * @params index - the index of the inventory where the specific item is located
 	 */ 
 	private void removeItem(int index){
-		if (currentItems > 0) {
+		if (size > 0) {
 			playerInventory.RemoveAt(index);
-			currentItems--;
+			size--;
 		} else {
 			Debug.Log ("There is nothing in your inventory to remove");
 		}
@@ -71,6 +73,22 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	private bool Contains(Item invItem){
+		if (size > 0) {
+			for (int i = 0; i < size; i++) {
+				Item currentItem = (Item)playerInventory [i];
+				if (currentItem.itemName.Equals (invItem.itemName)) {
+					currentItem.numOfItem++;
+					playerInventory [i] = currentItem;
+					return true;
+				}
+			}
+		}
+		playerInventory.Add (invItem);
+		size++;
+		return false;
+	}
+
 	/**
 	 * Method to set the initial Inventory GUI, sets all buttons to display "No Item"
 	 * 
@@ -80,16 +98,30 @@ public class Inventory : MonoBehaviour {
 	 * @params GUI canvas housing buttons
 	 */ 
 	private void InitializeGUI(Canvas canvas){
-		for (int i = 0; i < canvas.transform.childCount; i++) {
-			Transform child = canvas.transform.GetChild (i);
-			if (child.tag == "InvSlot") {
-				Transform childsChild = child.transform.GetChild (0);
-				Text bText = childsChild.GetComponent<Text> ();
-				bText.text = "No Item";
+		if (size == 0) {
+			for (int i = 0; i < canvas.transform.childCount; i++) {
+				Transform child = canvas.transform.GetChild (i);
+				if (child.tag == "InvSlot") {
+					invSlots [slotIndex] = child;
+					slotIndex++;
+					Transform childsChild = child.transform.GetChild (0);
+					Text bText = childsChild.GetComponent<Text> ();
+					bText.text = "No Item";
 
+				}
 			}
+		} else {
+			updateInv (size - 1);
 		}
 		//disable GUI visual
 		inventoryUI.enabled = false;
+	}
+
+	private void updateInv(int index){
+		
+		Transform slot = invSlots [index];
+		Text bText = slot.GetComponent<Text> ();
+		Item invItem = (Item) playerInventory [index];
+		bText.text = invItem.itemName;
 	}
 }
